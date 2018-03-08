@@ -176,7 +176,7 @@ async function saveRecipient(chatId, user, pass, msg) {
 bot.onText(/\/login (.+) (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
     if (await scrapperLogic.checkIfAllowed(match[1], match[2])) {
-        saveRecipient(chatId, match[1], await scrapperLogic.passToMd5(match[2]), `Bienvenido ${match[1]}! Tu login fué exitoso! tu pass no fue almacenada, por lo que tendras que loguearte semanalmente.`);
+        saveRecipient(chatId, match[1], null, `Bienvenido ${match[1]}! Tu login fué exitoso! tu pass no fue almacenada, por lo que tendras que loguearte semanalmente.`);
     } else {
         await bot.sendMessage(chatId, "Tu login falló por uno de los sgtes. motivos:\n- Ese usuario no esta registrado en CHW.\n- Tu password es incorrecta\n- No calificas para ver las papas.");
     }
