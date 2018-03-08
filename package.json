@@ -1,0 +1,23 @@
+{
+  "name": "papas-chw-bot",
+  "version": "1.0.0",
+  "description": "Gatilla notificaciones cuando ocurre una PAPA.",
+  "main": "app.js",
+  "dependencies": {
+    "async": "^2.6.0",
+    "cheerio": "1.0.0-rc.2",
+    "dotenv": "^4.0.0",
+    "mongodb": "^2.2.33",
+    "node-fetch": "^1.7.3",
+    "node-telegram-bot-api": "^0.29.0",
+    "winston": "^2.4.0",
+    "xmlhttprequest": "^1.8.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "debug": "node %NODE_DEBUG_OPTION% app.js",
+    "start": "node app.js"
+  },
+  "author": "ulayera",
+  "license": "GPL-3.0"
+}
