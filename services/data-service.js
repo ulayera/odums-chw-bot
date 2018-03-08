@@ -74,11 +74,11 @@ exports.saveRecipient = function (cb, obj) {
   });
 };
 
-exports.deleteRecipient = function (cb, obj) {
+exports.deleteRecipient = async function (cb, obj) {
   MongoClient.connect(url, function (err, db) {
     assert.equal(null, err);
     var collection = db.collection('recipients');
-    collection.deleteOne({_id: obj._id}, obj, {upsert: true}, function (err, result) {
+    collection.deleteOne({_id: obj._id}, obj, function (err, result) {
       db.close();
       if (err)
         cb(err);

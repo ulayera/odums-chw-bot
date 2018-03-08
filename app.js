@@ -44,5 +44,5 @@
 
 //se invoca cada cierto tiempo segun configuracion de archivo .env
     scrappingLogic();
-    setInterval(logic, parseInt(scrapperLogic.envService.getEnv("REFRESH_SECONDS")) * 1000);
+    setInterval(scrappingLogic, parseInt(scrapperLogic.envService.getEnv("REFRESH_SECONDS")) * 1000);
 })();
