@@ -160,14 +160,6 @@ bot.onText(/\/help/, (msg) => {
     help(msg.chat.id);
 });
 
-bot.onText(/\/login (.+) (.+)/, async (msg, match) => {
-    const chatId = msg.chat.id;
-    if (await scrapperLogic.checkIfAllowed(match[1], match[2])) {
-        saveRecipient(chatId, match[1], await scrapperLogic.passToMd5(match[2]), `Bienvenido ${match[1]}! Tu login fué exitoso! tu pass no fue almacenada, por lo que tendras que loguearte semanalmente.`);
-    } else {
-        await bot.sendMessage(chatId, "Tu login falló por uno de los sgtes. motivos:\n- Ese usuario no esta registrado en CHW.\n- Tu password es incorrecta\n- No calificas para ver las papas.");
-    }
-});
 
 async function saveRecipient(chatId, user, pass, msg) {
     await dataService.saveRecipient(async function () {
@@ -181,12 +173,20 @@ async function saveRecipient(chatId, user, pass, msg) {
     });
 }
 
+bot.onText(/\/login (.+) (.+)/, async (msg, match) => {
+    const chatId = msg.chat.id;
+    if (await scrapperLogic.checkIfAllowed(match[1], match[2])) {
+        saveRecipient(chatId, match[1], await scrapperLogic.passToMd5(match[2]), `Bienvenido ${match[1]}! Tu login fué exitoso! tu pass no fue almacenada, por lo que tendras que loguearte semanalmente.`);
+    } else {
+        await bot.sendMessage(chatId, "Tu login falló por uno de los sgtes. motivos:\n- Ese usuario no esta registrado en CHW.\n- Tu password es incorrecta\n- No calificas para ver las papas.");
+    }
+});
+
 bot.onText(/\/remember (.+) (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
     if (await scrapperLogic.checkIfAllowed(match[1], match[2])) {
         saveRecipient(chatId, match[1], await scrapperLogic.passToMd5(match[2]), `Bienvenido ${match[1]}! Tu login fué exitoso! tu pass fue (codificada y) almacenada, por lo que se renovará automáticamente.`);
-    }
-    else {
+    } else {
         await bot.sendMessage(chatId, "Tu login falló por uno de los sgtes. motivos:\n- Ese usuario no esta registrado en CHW.\n- Tu password es incorrecta\n- No calificas para ver las papas.");
     }
 });
@@ -199,8 +199,10 @@ bot.onText(/\/logout/, async (msg) => {
 });
 
 exports.sendTelegramMessage = async function (cb, obj) {
-    let body = obj.titulo + "\n\nURL Web Foro: " + obj.url +
-        "\n\nURL Tapatalk:\nhttps://r.tapatalk.com/shareLink?share_fid=16103&share_tid=1539386&url=" + encodeURI(obj.url) + "&share_type=t";
+    let body = obj.titulo +
+        "\n\nURL Web Foro: " + obj.url +
+        "\n\nURL Tapatalk:\nhttps://r.tapatalk.com/shareLink?share_fid=16103&share_tid=1539386&url=" + encodeURI(obj.url) + "&share_type=t" +
+        "\n\nURL Tapatalk Prueba:\n​\ntapatalk://www.chw.net/foro?location=topic&type=vb40_5.0.1&fid=16103&tid=" + obj._id;
     dataService.findAllRecipients(async function (recipients) {
         for (let i = 0; i < recipients.length; i++) {
             let recipient = recipients[i];
@@ -213,8 +215,9 @@ exports.sendTelegramMessage = async function (cb, obj) {
                 }
             if (isAllowed) {
                 await bot.sendMessage(chatId, body);
-            } else
-                await bot.sendMessage(chatId, "Se venció tu acceso a las papas, prueba con:\n- Loguearte nuevamente con /login o /remember\n- Contactar a naarf\n- Deslogueate con /logout.");
+            } else {
+                await bot.sendMessage(chatId, "Se venció tu acceso a las papas, prueba con:\n- Loguearte nuevamente con /login o /remember\n- Deslogueate con /logout.");
+            }
         }
         cb(obj);
     });
