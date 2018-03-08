@@ -199,7 +199,8 @@ bot.onText(/\/logout/, async (msg) => {
 });
 
 exports.sendTelegramMessage = async function (cb, obj) {
-    let body = obj.titulo + '\n' + obj.url;
+    let body = obj.titulo + "\n\nURL Web Foro: " + obj.url +
+        "\n\nURL Tapatalk:\nhttps://r.tapatalk.com/shareLink?share_fid=16103&share_tid=1539386&url=" + encodeURI(obj.url) + "&share_type=t";
     dataService.findAllRecipients(async function (recipients) {
         for (let i = 0; i < recipients.length; i++) {
             let recipient = recipients[i];

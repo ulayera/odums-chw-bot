@@ -9,7 +9,7 @@
 
     app.on('request', async (req, res) => {
         res.writeHead(200, {'Content-Type': 'text/plain'});
-        res.write(`${name} está arriba y funcionando!`);
+        res.write(`${name} esta arriba y funcionando!`);
         res.end('\n');
     });
     app.listen(port, () => {
