@@ -1,12 +1,8 @@
 var exports = module.exports = {};
-const http = require('http');
-const TelegramBot = require('node-telegram-bot-api');
-var envService = require("./env-service.js");
-const dataService = require("./data-service.js");
-const token = envService.getEnv('TELEGRAM_BOT_TOKEN');
-const bot = new TelegramBot(token, {polling: true});
-const utilService = require("./util-service.js");
-const scrapperLogic = require("../logic/scrapper-logic.js");
+
+const http = module.parent.exports.http;
+const envService = module.parent.exports.envService;
+const utilService = module.parent.exports.utilService;
 const sensitive = {
     "forum": {
         "vb_login_md5password": envService.getEnv('FORUM_MD5PASS'),
@@ -15,17 +11,23 @@ const sensitive = {
         "vb_login_username": envService.getEnv('FORUM_USER')
     }
 };
-let login_post_data = `do=login&vb_login_md5password=${sensitive.forum.vb_login_md5password}&vb_login_md5password_utf=${sensitive.forum.vb_login_md5password_utf}&` +
-    `s=${sensitive.forum.s}&securitytoken=guest&url=%2Fforo%2Fforumdisplay.php%3Ff%3D168&vb_login_username=${sensitive.forum.vb_login_username}&vb_login_password=&cookieuser=1`;
-let currentVersion = {
-    "number": envService.getEnv('VERSION'),
-    "text": envService.getEnv('NEW_VERSION_MESSAGE_' + envService.getEnv('VERSION'))
-};
-
 
 exports.headers = null;
 
+exports.getIp = function (cb) {
+    http.get({'host': 'api.ipify.org', 'port': 80, 'path': '/'}, function(resp) {
+        resp.on('data', function(ip) {
+            cb(ip);
+        });
+        resp.on('error', function(e) {
+            cb(e);
+        });
+    });
+};
+
 exports.doLogin = function (cb, login) {
+    let login_post_data = `do=login&vb_login_md5password=${sensitive.forum.vb_login_md5password}&vb_login_md5password_utf=${sensitive.forum.vb_login_md5password_utf}&` +
+        `s=${sensitive.forum.s}&securitytoken=guest&url=%2Fforo%2Fforumdisplay.php%3Ff%3D168&vb_login_username=${sensitive.forum.vb_login_username}&vb_login_password=&cookieuser=1`;
     let data = "";
     if (login)
         data = `do=login&vb_login_md5password=${login.pass}&vb_login_md5password_utf=${login.pass}&` +
@@ -142,83 +144,5 @@ exports.getPapaDetails = function (cb, obj) {
     });
     req.on('error', function (e) {
         console.log('ERROR: ' + e.message);
-    });
-};
-
-async function help(chatId) {
-    await bot.sendMessage(chatId, "Escribe '/login {user} {pass}' para registrarte. (tu password no se almacenará, pero tu sesión durará una semana)");
-    await bot.sendMessage(chatId, "Escribe '/remember {user} {pass}' para registrarte. (tu password se almacenará, pero codificada");
-    await bot.sendMessage(chatId, "Escribe '/logout' para dejar de recibir mensajes.");
-    await bot.sendMessage(chatId, "Escribe '/help para mostrar esta ayuda.");
-}
-
-bot.onText(/\/start/, async (msg) => {
-    help(msg.chat.id);
-});
-
-bot.onText(/\/help/, (msg) => {
-    help(msg.chat.id);
-});
-
-
-async function saveRecipient(chatId, user, pass, msg) {
-    await dataService.saveRecipient(async function () {
-        await bot.sendMessage(chatId, msg);
-    }, {
-        "_id": chatId,
-        "chatId": chatId,
-        "username": user,
-        "password": pass,
-        "date": new Date()
-    });
-}
-
-bot.onText(/\/login (.+) (.+)/, async (msg, match) => {
-    const chatId = msg.chat.id;
-    if (await scrapperLogic.checkIfAllowed(match[1], match[2])) {
-        saveRecipient(chatId, match[1], null, `Bienvenido ${match[1]}! Tu login fué exitoso! tu pass no fue almacenada, por lo que tendras que loguearte semanalmente.`);
-    } else {
-        await bot.sendMessage(chatId, "Tu login falló por uno de los sgtes. motivos:\n- Ese usuario no esta registrado en CHW.\n- Tu password es incorrecta\n- No calificas para ver las papas.");
-    }
-});
-
-bot.onText(/\/remember (.+) (.+)/, async (msg, match) => {
-    const chatId = msg.chat.id;
-    if (await scrapperLogic.checkIfAllowed(match[1], match[2])) {
-        saveRecipient(chatId, match[1], await scrapperLogic.passToMd5(match[2]), `Bienvenido ${match[1]}! Tu login fué exitoso! tu pass fue (codificada y) almacenada, por lo que se renovará automáticamente.`);
-    } else {
-        await bot.sendMessage(chatId, "Tu login falló por uno de los sgtes. motivos:\n- Ese usuario no esta registrado en CHW.\n- Tu password es incorrecta\n- No calificas para ver las papas.");
-    }
-});
-
-bot.onText(/\/logout/, async (msg) => {
-    const chatId = msg.chat.id;
-    var result = await dataService.deleteRecipient(async function (data) {
-        await bot.sendMessage(chatId, "Te deslogueaste OK, si almacenaste tu password esta ya se eliminó completamente de la BD");
-    }, {"_id": chatId});
-});
-
-exports.sendTelegramMessage = async function (cb, obj) {
-    let body = obj.titulo +
-        "\n\nURL Web Foro: " + obj.url +
-        "\n\nURL Tapatalk:\nhttps://r.tapatalk.com/shareLink?share_fid=16103&share_tid=1539386&url=" + encodeURI(obj.url) + "&share_type=t" +
-        "\n\nURL Tapatalk Prueba:\n​\ntapatalk://www.chw.net/foro?location=topic&type=vb40_5.0.1&fid=16103&tid=" + obj._id;
-    dataService.findAllRecipients(async function (recipients) {
-        for (let i = 0; i < recipients.length; i++) {
-            let recipient = recipients[i];
-            let chatId = recipient.chatId;
-            let isAllowed = true;
-            if (utilService.dateDiff(recipient.date, Date()) > 6)
-                if (recipient.password) {
-                    isAllowed = await scrapperLogic.checkIfAllowed(recipient.username, recipient.password);
-                    await saveRecipient(chatId, recipient.username, await scrapperLogic.passToMd5(recipient.password), "Tu acceso se renovó automáticamente!");
-                }
-            if (isAllowed) {
-                await bot.sendMessage(chatId, body);
-            } else {
-                await bot.sendMessage(chatId, "Se venció tu acceso a las papas, prueba con:\n- Loguearte nuevamente con /login o /remember\n- Deslogueate con /logout.");
-            }
-        }
-        cb(obj);
     });
 };

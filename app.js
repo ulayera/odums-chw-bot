@@ -4,19 +4,41 @@
     const name = 'papas-chw-bot';
     const port = '3000';
 
-    const http = require('http');
-    const app = new http.Server();
+    let express = require('express');
+    let app = express();
 
-    app.on('request', async (req, res) => {
-        res.writeHead(200, {'Content-Type': 'text/plain'});
-        res.write(`${name} esta arriba y funcionando!`);
-        res.end('\n');
+    app.get('/redirect', function (req, res) {
+        res.redirect(decodeURI(req.query.url));
     });
+    app.get('/', function (req, res) {
+        res.send(`${name} esta arriba y funcionando!`);
+    });
+
     app.listen(port, () => {
         console.log(`${name} is listening on port ${port}`);
     });
 
+    console.log = async function (str) {
+        let ip = await scrapperLogic.utilService.asyncWrapper(scrapperLogic.getIp);
+        scrapperLogic.dataService.addLog({
+            "level": "info",
+            "msg": str,
+            "date": new Date(),
+            "ip" : ip
+        });
+    };
+    console.error = async function (str) {
+        let ip = await scrapperLogic.utilService.asyncWrapper(scrapperLogic.getIp);
+        scrapperLogic.dataService.addLog({
+            "level": "error",
+            "msg": str,
+            "date": new Date(),
+            "ip" : ip
+        });
+    };
+
     async function scrappingLogic() {
+        let a = Date.now();
         if (!scrapperLogic.isLoggedIn())
             await scrapperLogic.utilService.asyncWrapper(scrapperLogic.doLogin);
         if (scrapperLogic.isLoggedIn()) {
@@ -26,7 +48,7 @@
                 papasWeb,
                 papasDB
             );
-            for (var i in papas) {
+            for (let i in papas) {
                 let elem = papas[i];
                 if (!elem.post)
                     await scrapperLogic.utilService.asyncWrapper(scrapperLogic.getPapaDetails, [elem]);
@@ -40,9 +62,17 @@
                 }
             }
         }
+        console.log("scrappingLogic lasted: " + (Date.now() - a) / 1000 + " seconds at " + scrapperLogic.utilService.formattedDate(new Date()));
     }
 
 //se invoca cada cierto tiempo segun configuracion de archivo .env
-    scrappingLogic();
-    setInterval(scrappingLogic, parseInt(scrapperLogic.envService.getEnv("REFRESH_SECONDS")) * 1000);
+    (async function repeat() {
+        setTimeout(
+            async function () {
+                await scrappingLogic();
+                repeat();
+            },
+            parseInt(scrapperLogic.envService.getEnv("REFRESH_SECONDS")) * 1000
+        );
+    })();
 })();

@@ -1,7 +1,7 @@
 var exports = module.exports = {};
-var cheerio = require("cheerio");
+const cheerio = module.parent.exports.cheerio;
 
-exports.asyncWrapper = async function(func, args) {
+exports.asyncWrapper = async function (func, args) {
     if (!args) args = [];
     return new Promise((resolve, reject) => {
         args.unshift(function (value) {
@@ -23,12 +23,12 @@ exports.parseaHTMLPapas = function (body, foro) {
         const $ = cheerio.load(hilos[i]);
         try {
             var obj = {
-                "_id" : hilos[i].attribs.id.split('_')[1],
-                "autor" : $("a.username")[0].children[0].data,
-                "titulo" : $("a.title")[0].children[0].data,
-                "desc" :  $("div.threadinfo")[0].attribs.title,
-                "url" :  $("a.title")[0].attribs.href,
-                "source" : foro
+                "_id": hilos[i].attribs.id.split('_')[1],
+                "autor": $("a.username")[0].children[0].data,
+                "titulo": $("a.title")[0].children[0].data,
+                "desc": $("div.threadinfo")[0].attribs.title,
+                "url": $("a.title")[0].attribs.href,
+                "source": foro
             };
             output.push(obj);
         } catch (e) {
@@ -44,10 +44,10 @@ var stripHTML = function (elements, strBuffer) {
             if (row.type === 'text')
                 strBuffer = concatNoDuplicate(strBuffer, row.data);
             else if (row.type === 'tag' && row.name === 'a') {
-                strBuffer = concatNoDuplicate(strBuffer , '\n' + row.attribs.href + '\n');
+                strBuffer = concatNoDuplicate(strBuffer, '\n' + row.attribs.href + '\n');
             } else if (row.type === 'tag' && row.name === 'img') {
                 if (row.attribs.src.indexOf('base64') === -1)
-                    strBuffer = concatNoDuplicate(strBuffer , '\n' + row.attribs.src + '\n');
+                    strBuffer = concatNoDuplicate(strBuffer, '\n' + row.attribs.src + '\n');
             } else if (row.children && row.children.length > 0) {
                 strBuffer = stripHTML(row.children, strBuffer);
             }
@@ -57,7 +57,7 @@ var stripHTML = function (elements, strBuffer) {
     }
     return strBuffer;
 };
-var concatNoDuplicate = function(str1, str2) {
+var concatNoDuplicate = function (str1, str2) {
     if (str1.indexOf(str2) < 0)
         return str1 + str2;
     else
@@ -74,7 +74,7 @@ exports.parseaHTMLPapaDetails = function (body) {
     return strBuffer;
 };
 
-exports.toIdArray = function(list) {
+exports.toIdArray = function (list) {
     let result = [];
     for (let i = 0; i < list.length; i++) {
         result.push(list[i]._id);
@@ -104,7 +104,7 @@ exports.splitUrl = function (url) {
     return urlObj;
 };
 
-exports.comparePapasById = function (a,b) {
+exports.comparePapasById = function (a, b) {
     var ida = parseInt(a._id);
     var idb = parseInt(b._id);
     if (ida > idb)
@@ -114,7 +114,7 @@ exports.comparePapasById = function (a,b) {
     return 0;
 };
 
-exports.compareDates = function(a,b){
+exports.compareDates = function (a, b) {
     if (b.getTime() < a.getTime())
         return -1;
     else if (a.getTime() < b.getTime())
@@ -122,8 +122,19 @@ exports.compareDates = function(a,b){
     else
         return 0;
 };
-exports.dateDiff = function(date1, date2) {
+exports.dateDiff = function (date1, date2) {
     dt1 = new Date(date1);
     dt2 = new Date(date2);
-    return Math.floor((Date.UTC(dt2.getFullYear(), dt2.getMonth(), dt2.getDate()) - Date.UTC(dt1.getFullYear(), dt1.getMonth(), dt1.getDate()) ) /(1000 * 60 * 60 * 24));
+    return Math.floor((Date.UTC(dt2.getFullYear(), dt2.getMonth(), dt2.getDate()) - Date.UTC(dt1.getFullYear(), dt1.getMonth(), dt1.getDate())) / (1000 * 60 * 60 * 24));
+};
+
+exports.formattedDate = function (date) {
+    let str = "";
+    str += date.getFullYear() + "-";
+    str += (date.getMonth() < 10 ? "0" : "") + date.getMonth() + 1 + "-";
+    str += (date.getDate() < 10 ? "0" : "") + date.getDate() + " ";
+    str += (date.getHours() < 10 ? "0" : "") + date.getHours() + ":";
+    str += (date.getMinutes() < 10 ? "0" : "") + date.getMinutes() + ":";
+    str += (date.getSeconds() < 10 ? "0" : "") + date.getSeconds();
+    return str;
 };
