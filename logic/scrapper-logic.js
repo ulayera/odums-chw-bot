@@ -52,6 +52,8 @@ exports.sendTelegramMessage = async function () {
     return await sendTelegramMessage.apply(null, arguments);
 };
 
+exports.checkAndSaveForumsAccess = checkAndSaveForumsAccess;
+
 exports.saveToDB = async function () {
     return await dataService.saveToDB.apply(null, arguments);
 };
@@ -78,10 +80,25 @@ exports.log = async function (obj) {
     dataService.addLog(obj);
 };
 
+async function checkAndSaveForumsAccess() {
+    dataService.findAllRecipients(async function (recipients) {
+        for (let i=0;i<recipients.length;i++) {
+            let recipient = recipients[i];
+            if (recipient.password) {
+                recipient.isOdumAllowed = await botLogic.checkIfOdumAllowed(recipient.username, recipient.password);
+                recipient.isAllowed = await botLogic.checkIfAllowed(recipient.username, recipient.password);
+                await dataService.saveRecipient(function () {}, recipient);
+            }
+        }
+    });
+}
+
 async function sendTelegramMessage(cb, obj) {
-    let body = obj.titulo +
+    let body =
+        "Título: " + obj.titulo +
+        "Post: " + obj.post +
         "\n\nURL Web Foro : " + obj.url +
-        "\n\nURL Tapatalk : https://r.tapatalk.com/shareLink?share_fid=16103&share_tid=" + obj._id + "&url=" + encodeURI(obj.url) + "&share_type=t";
+        "\nURL Tapatalk : https://r.tapatalk.com/shareLink?share_fid=16103&share_tid=" + obj._id + "&url=" + encodeURI(obj.url) + "&share_type=t";
     dataService.findAllRecipients(async function (recipients) {
         for (let i = 0; i < recipients.length; i++) {
             let recipient = recipients[i];
@@ -93,7 +110,11 @@ async function sendTelegramMessage(cb, obj) {
                     await saveRecipient(chatId, recipient.username, await scrapperLogic.passToMd5(recipient.password), "Tu acceso se renovó automáticamente!");
                 }
             if (isAllowed) {
-                await botLogic.sendMessage(chatId, body, {disable_web_page_preview: true});
+                try {
+                    await botLogic.sendMessage(chatId, body, {disable_web_page_preview: true});
+                } catch (e) {
+                    console.error(e);
+                }
             } else {
                 await botLogic.sendMessage(chatId, "Se venció tu acceso a las papas, prueba con:\n- Loguearte nuevamente con /login o /remember\n- Deslogueate con /logout.", {disable_web_page_preview: true});
             }

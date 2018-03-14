@@ -111,6 +111,46 @@ exports.getPapas = function (cb, headers) {
     });
 };
 
+
+exports.getOdums = function (cb, headers) {
+    var strCookies = "";
+    let useHeaders;
+    if (headers) {
+        useHeaders = headers;
+    } else {
+        useHeaders = exports.headers;
+    }
+    for (var i = 0; i < useHeaders["set-cookie"].length; i++)
+        strCookies += useHeaders["set-cookie"][i] + "; ";
+    let path = '/foro/ofertas-ultimo-minuto/?pp=10&daysprune=-1&sort=dateline&prefixid=&order=desc';
+    var options = {
+        host: 'www.chw.net',
+        port: '80',
+        path: path,
+        method: 'GET',
+        headers: {
+            "accept-language": "en",
+            "upgrade-insecure-requests": "1",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3221.0 Safari/537.36",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+            "cookie": strCookies,
+            "connection": "keep-alive"
+        }
+    };
+    var req = http.get(options, function (res) {
+        var bodyChunks = [];
+        res.on('data', function (chunk) {
+            bodyChunks.push(chunk);
+        }).on('end', function () {
+            cb(Buffer.concat(bodyChunks).toString('latin1'));
+        });
+    });
+    req.on('error', function (e) {
+        console.error(e);
+        cb(e);
+    });
+};
+
 exports.getPapaDetails = function (cb, obj) {
     var urlObj = utilService.splitUrl(obj.url);
     var strCookies = "";

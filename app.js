@@ -2,7 +2,7 @@
     require('dotenv').config();
     const scrapperLogic = require("./logic/scrapper-logic.js");
     const name = 'papas-chw-bot';
-    const port = '3000';
+    const port = '3001';
 
     let express = require('express');
     let app = express();
@@ -18,27 +18,27 @@
         console.log(`${name} is listening on port ${port}`);
     });
 
-    console.log = async function (str) {
-        let ip = await scrapperLogic.utilService.asyncWrapper(scrapperLogic.getIp);
-        scrapperLogic.dataService.addLog({
-            "level": "info",
-            "msg": str,
-            "date": new Date(),
-            "ip" : ip
-        });
-    };
-    console.error = async function (str) {
-        let ip = await scrapperLogic.utilService.asyncWrapper(scrapperLogic.getIp);
-        scrapperLogic.dataService.addLog({
-            "level": "error",
-            "msg": str,
-            "date": new Date(),
-            "ip" : ip
-        });
-    };
+    // console.log = async function (str) {
+    //     let ip = await scrapperLogic.utilService.asyncWrapper(scrapperLogic.getIp);
+    //     scrapperLogic.dataService.addLog({
+    //         "level": "info",
+    //         "msg": str,
+    //         "date": new Date(),
+    //         "ip" : ip
+    //     });
+    // };
+    // console.error = async function (str) {
+    //     let ip = await scrapperLogic.utilService.asyncWrapper(scrapperLogic.getIp);
+    //     scrapperLogic.dataService.addLog({
+    //         "level": "error",
+    //         "msg": str,
+    //         "date": new Date(),
+    //         "ip" : ip
+    //     });
+    // };
 
     async function scrappingLogic() {
-        let a = Date.now();
+        //let a = Date.now();
         if (!scrapperLogic.isLoggedIn())
             await scrapperLogic.utilService.asyncWrapper(scrapperLogic.doLogin);
         if (scrapperLogic.isLoggedIn()) {
@@ -62,17 +62,36 @@
                 }
             }
         }
-        console.log("scrappingLogic lasted: " + (Date.now() - a) / 1000 + " seconds at " + scrapperLogic.utilService.formattedDate(new Date()));
+        //console.log("scrappingLogic lasted: " + (Date.now() - a) / 1000 + " seconds at " + scrapperLogic.utilService.formattedDate(new Date()));
     }
 
 //se invoca cada cierto tiempo segun configuracion de archivo .env
-    (async function repeat() {
-        setTimeout(
-            async function () {
-                await scrappingLogic();
-                repeat();
-            },
-            parseInt(scrapperLogic.envService.getEnv("REFRESH_SECONDS")) * 1000
-        );
-    })();
+    try {
+        await scrappingLogic();
+        (async function repeat() {
+            setTimeout(
+                async function () {
+                    await scrappingLogic();
+                    repeat();
+                },
+                parseInt(scrapperLogic.envService.getEnv("REFRESH_SECONDS")) * 1000
+            );
+        })();
+    } catch (e) {
+        console.error(e);
+    }
+    try {
+        await scrapperLogic.checkAndSaveForumsAccess();
+        (async function repeat() {
+            setTimeout(
+                async function () {
+                    await scrapperLogic.checkAndSaveForumsAccess();
+                    repeat();
+                },
+                parseInt(scrapperLogic.envService.getEnv("FORUM_ACCESS_REFRESH_SECONDS")) * 1000
+            );
+        })();
+    } catch (e) {
+        console.error(e);
+    }
 })();

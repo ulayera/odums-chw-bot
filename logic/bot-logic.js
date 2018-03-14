@@ -31,12 +31,25 @@ async function saveRecipient(chatId, user, pass, msg) {
 let checkIfAllowed = exports.checkIfAllowed = async function checkIfAllowed(user, pass) {
     let loginHeaders = await utilService.asyncWrapper(httpService.doLogin, [{
         user: user,
-        pass: await passToMd5(pass)
+        pass: pass
     }]);
     if (loginHeaders && loginHeaders["set-cookie"].length > 3) {
         let a = await utilService.asyncWrapper(httpService.getPapas, [loginHeaders]);
         b = utilService.parseaHTMLPapas(a);
         return b && b.length > -1;
+    } else
+        return false;
+};
+
+let checkIfOdumAllowed = exports.checkIfOdumAllowed = async function checkIfOdumAllowed(user, pass) {
+    let loginHeaders = await utilService.asyncWrapper(httpService.doLogin, [{
+        user: user,
+        pass: pass
+    }]);
+    if (loginHeaders && loginHeaders["set-cookie"].length > 3) {
+        let a = await utilService.asyncWrapper(httpService.getOdums, [loginHeaders]);
+        b = utilService.parseaHTMLPapas(a);
+        return b && b.length > 0;
     } else
         return false;
 };
@@ -60,8 +73,9 @@ bot.onText(/\/login (.+) (.+)/, async (msg, match) => {
 
 bot.onText(/\/remember (.+) (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
-    if (await checkIfAllowed(match[1], match[2])) {
-        saveRecipient(chatId, match[1], await passToMd5(match[2]), `Bienvenido ${match[1]}! Tu login fué exitoso! tu pass fue (codificada y) almacenada, por lo que se renovará automáticamente.`);
+    let pass = await passToMd5(match[2]);
+    if (await checkIfAllowed(match[1], pass)) {
+        saveRecipient(chatId, match[1], pass, `Bienvenido ${match[1]}! Tu login fué exitoso! tu pass fue (codificada y) almacenada, por lo que se renovará automáticamente.`);
     } else {
         await bot.sendMessage(chatId, "Tu login falló por uno de los sgtes. motivos:\n- Ese usuario no esta registrado en CHW.\n- Tu password es incorrecta\n- No calificas para ver las papas.", {disable_web_page_preview: true});
     }
