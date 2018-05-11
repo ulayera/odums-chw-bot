@@ -11,12 +11,12 @@ const sensitive = {
         "dbname": envService.getEnv('DB_DBNAME')
     }
 };
-var url = `mongodb://${sensitive.db.user}:${sensitive.db.password}@${sensitive.db.host}:${sensitive.db.port}/${sensitive.db.dbname}`;
+let url = `mongodb://${sensitive.db.user}:${sensitive.db.password}@${sensitive.db.host}:${sensitive.db.port}/${sensitive.db.dbname}`;
 
 exports.getPapasByIdlist = function (cb, idList) {
     MongoClient.connect(url, function (err, db) {
         assert.equal(null, err);
-        var collection = db.collection('papas');
+        let collection = db.collection('papas');
         collection.find({_id: {$in: idList}}, function (err, result) {
             if (err)
                 cb(err);
@@ -33,7 +33,7 @@ exports.getPapasByIdlist = function (cb, idList) {
 exports.saveToDB = async function (cb, obj) {
     MongoClient.connect(url, async function (err, db) {
         assert.equal(null, err);
-        var collection = db.collection('papas');
+        let collection = db.collection('papas');
         await collection.updateOne({_id: obj._id}, obj, {upsert: true}, function (err, result) {
             db.close();
             if (err)
@@ -47,7 +47,7 @@ exports.saveToDB = async function (cb, obj) {
 exports.findAllRecipients = function (cb) {
     MongoClient.connect(url, function (err, db) {
         assert.equal(null, err);
-        var collection = db.collection('recipients');
+        let collection = db.collection('recipients');
         collection.find({}, function (err, result) {
             if (err) {
                 db.close();
@@ -67,7 +67,7 @@ exports.findAllRecipients = function (cb) {
 exports.saveRecipient = function (cb, obj) {
     MongoClient.connect(url, function (err, db) {
         assert.equal(null, err);
-        var collection = db.collection('recipients');
+        let collection = db.collection('recipients');
         collection.updateOne({_id: obj._id}, obj, {upsert: true}, function (err, result) {
             db.close();
             cb(obj);
@@ -78,7 +78,7 @@ exports.saveRecipient = function (cb, obj) {
 exports.deleteRecipient = async function (cb, obj) {
     MongoClient.connect(url, function (err, db) {
         assert.equal(null, err);
-        var collection = db.collection('recipients');
+        let collection = db.collection('recipients');
         collection.deleteOne({_id: obj._id}, obj, function (err, result) {
             db.close();
             if (err)
@@ -91,7 +91,7 @@ exports.deleteRecipient = async function (cb, obj) {
 exports.addLog = function (obj) {
     MongoClient.connect(url, function (err, db) {
         assert.equal(null, err);
-        var collection = db.collection('logs');
+        let collection = db.collection('logs');
         collection.insertOne(obj);
     });
 };

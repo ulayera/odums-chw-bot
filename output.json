@@ -1,0 +1,212 @@
+[
+  {
+    num_full_gc: 8,
+    num_inc_gc: 72,
+    heap_compactions: 8,
+    usage_trend: 0,
+    estimated_base: 20474104,
+    current_base: 20474104,
+    min: 20057728,
+    max: 24017952
+  },
+  {
+    num_full_gc: 9,
+    num_inc_gc: 73,
+    heap_compactions: 9,
+    usage_trend: 0,
+    estimated_base: 20189640,
+    current_base: 20189640,
+    min: 20057728,
+    max: 24017952
+  },
+  {
+    num_full_gc: 10,
+    num_inc_gc: 90,
+    heap_compactions: 10,
+    usage_trend: 0,
+    estimated_base: 20219101,
+    current_base: 20484256,
+    min: 20057728,
+    max: 24017952
+  },
+  {
+    num_full_gc: 11,
+    num_inc_gc: 120,
+    heap_compactions: 11,
+    usage_trend: 0.2,
+    estimated_base: 20627237,
+    current_base: 24300464,
+    min: 20057728,
+    max: 24300464
+  },
+  {
+    num_full_gc: 12,
+    num_inc_gc: 121,
+    heap_compactions: 12,
+    usage_trend: 0.2,
+    estimated_base: 20617978,
+    current_base: 20534656,
+    min: 20057728,
+    max: 24300464
+  },
+  {
+    num_full_gc: 13,
+    num_inc_gc: 122,
+    heap_compactions: 13,
+    usage_trend: 0.1,
+    estimated_base: 20583453,
+    current_base: 20272728,
+    min: 20057728,
+    max: 24300464
+  },
+  {
+    num_full_gc: 14,
+    num_inc_gc: 138,
+    heap_compactions: 14,
+    usage_trend: 0.1,
+    estimated_base: 20579282,
+    current_base: 20541744,
+    min: 20057728,
+    max: 24300464
+  },
+  {
+    num_full_gc: 17,
+    num_inc_gc: 170,
+    heap_compactions: 17,
+    usage_trend: 0.4,
+    estimated_base: 20858747,
+    current_base: 20287960,
+    min: 20057728,
+    max: 24370152
+  },
+  {
+    num_full_gc: 18,
+    num_inc_gc: 186,
+    heap_compactions: 18,
+    usage_trend: 0.3,
+    estimated_base: 20828827,
+    current_base: 20559552,
+    min: 20057728,
+    max: 24370152
+  },
+  {
+    num_full_gc: 19,
+    num_inc_gc: 216,
+    heap_compactions: 19,
+    usage_trend: 1,
+    estimated_base: 21150358,
+    current_base: 24044144,
+    min: 20057728,
+    max: 24370152
+  },
+  {
+    num_full_gc: 20,
+    num_inc_gc: 217,
+    heap_compactions: 20,
+    usage_trend: 0.9,
+    estimated_base: 21092340,
+    current_base: 20570184,
+    min: 20057728,
+    max: 24370152
+  },
+  {
+    num_full_gc: 21,
+    num_inc_gc: 218,
+    heap_compactions: 21,
+    usage_trend: 0.6,
+    estimated_base: 21012461,
+    current_base: 20293552,
+    min: 20057728,
+    max: 24370152
+  },
+  {
+    num_full_gc: 22,
+    num_inc_gc: 235,
+    heap_compactions: 22,
+    usage_trend: 0.5,
+    estimated_base: 20968826,
+    current_base: 20576112,
+    min: 20057728,
+    max: 24370152
+  },
+  {
+    num_full_gc: 23,
+    num_inc_gc: 265,
+    heap_compactions: 23,
+    usage_trend: 1.3,
+    estimated_base: 21284725,
+    current_base: 24127816,
+    min: 20057728,
+    max: 24370152
+  },
+  {
+    num_full_gc: 26,
+    num_inc_gc: 297,
+    heap_compactions: 26,
+    usage_trend: 1.4,
+    estimated_base: 21398143,
+    current_base: 20344344,
+    min: 20057728,
+    max: 24548512
+  },
+  {
+    num_full_gc: 27,
+    num_inc_gc: 313,
+    heap_compactions: 27,
+    usage_trend: 1.1,
+    estimated_base: 21321685,
+    current_base: 20633568,
+    min: 20057728,
+    max: 24548512
+  },
+  {
+    num_full_gc: 28,
+    num_inc_gc: 343,
+    heap_compactions: 28,
+    usage_trend: 2,
+    estimated_base: 21637299,
+    current_base: 24477832,
+    min: 20057728,
+    max: 24548512
+  },
+  {
+    num_full_gc: 29,
+    num_inc_gc: 344,
+    heap_compactions: 29,
+    usage_trend: 1.6,
+    estimated_base: 21537869,
+    current_base: 20643008,
+    min: 20057728,
+    max: 24548512
+  },
+  {
+    num_full_gc: 30,
+    num_inc_gc: 345,
+    heap_compactions: 30,
+    usage_trend: 1.2,
+    estimated_base: 21419666,
+    current_base: 20355840,
+    min: 20057728,
+    max: 24548512
+  },
+  {
+    num_full_gc: 31,
+    num_inc_gc: 361,
+    heap_compactions: 31,
+    usage_trend: 0.9,
+    estimated_base: 21340102,
+    current_base: 20624032,
+    min: 20057728,
+    max: 24548512
+  },
+  {
+    num_full_gc: 32,
+    num_inc_gc: 391,
+    heap_compactions: 32,
+    usage_trend: 1.9,
+    estimated_base: 21665466,
+    current_base: 24593744,
+    min: 20057728,
+    max: 24593744
+  }
+]

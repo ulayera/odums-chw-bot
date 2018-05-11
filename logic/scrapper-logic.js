@@ -15,8 +15,13 @@ exports.isLoggedIn = function () {
     return httpService.headers !== null;
 };
 
-exports.getPapasWeb = async function () {
-    let papasWebRaw = await utilService.asyncWrapper(httpService.getPapas);
+exports.getPapasWeb = async function (headers) {
+    let papasWebRaw = await utilService.asyncWrapper(httpService.getPapas, [headers]);
+    return utilService.parseaHTMLPapas(papasWebRaw);
+};
+
+exports.getOdumsWeb = async function (headers) {
+    let papasWebRaw = await utilService.asyncWrapper(httpService.getOdums, [headers]);
     return utilService.parseaHTMLPapas(papasWebRaw);
 };
 
@@ -82,38 +87,63 @@ exports.log = async function (obj) {
 
 async function checkAndSaveForumsAccess() {
     dataService.findAllRecipients(async function (recipients) {
-        for (let i=0;i<recipients.length;i++) {
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        for (let i = recipients.length - 1; i >= 0; i--) {
             let recipient = recipients[i];
-            if (recipient.password) {
-                recipient.isOdumAllowed = await botLogic.checkIfOdumAllowed(recipient.username, recipient.password);
-                recipient.isAllowed = await botLogic.checkIfAllowed(recipient.username, recipient.password);
-                await dataService.saveRecipient(function () {}, recipient);
+            if (recipient.username !== 'fiegmund' && recipient.password && (!recipient.lastChecked || utilService.dateDiff(recipient.lastChecked, new Date()) > 1)) {
+                let loginHeaders = await botLogic.getLoginHeaders(recipient.username, recipient.password);
+                if (!loginHeaders || !loginHeaders["set-cookie"] || loginHeaders["set-cookie"].length < 7) {
+                    console.dberror("Durmiendo por 15 min. No se pudo loguear al usuario: \n" + JSON.stringify(recipient));
+                    //dataService.deleteRecipient(function () {}, recipient);
+                    await sleep(15 * 60 * 1000);
+                } else {
+                    recipient.isOdumAllowed = await botLogic.checkIfOdumAllowed(recipient.username, recipient.password, loginHeaders);
+                    recipient.isAllowed = await botLogic.checkIfAllowed(recipient.username, recipient.password, loginHeaders);
+                    recipient.lastChecked = new Date();
+                    await dataService.saveRecipient(function () {
+                    }, recipient);
+                    await httpService.getHome(async function (html) {
+                        console.dblog(html);
+                    }, loginHeaders);
+                    await sleep(60 * 1000);
+                }
+
             }
         }
+        console.dblog(`finished checking access`);
     });
 }
 
 async function sendTelegramMessage(cb, obj) {
     let body =
         "Título: " + obj.titulo +
-        "Post: " + obj.post +
+        "\nPost: " + obj.post +
         "\n\nURL Web Foro : " + obj.url +
-        "\nURL Tapatalk : https://r.tapatalk.com/shareLink?share_fid=16103&share_tid=" + obj._id + "&url=" + encodeURI(obj.url) + "&share_type=t";
+        "\nURL Tapatalk : https://r.tapatalk.com/shareLink?share_fid=16103&share_tid=" + obj._id + "&url=" + encodeURI(obj.url) + "&share_type=t" +
+        "\n---------------------------------------"
+    ;
     dataService.findAllRecipients(async function (recipients) {
         for (let i = 0; i < recipients.length; i++) {
             let recipient = recipients[i];
             let chatId = recipient.chatId;
             let isAllowed = true;
-            if (utilService.dateDiff(recipient.date, Date()) > 6)
+            if (utilService.dateDiff(recipient.date, new Date()) > 6) {
                 if (recipient.password) {
                     isAllowed = await botLogic.checkIfAllowed(recipient.username, recipient.password);
-                    await saveRecipient(chatId, recipient.username, await scrapperLogic.passToMd5(recipient.password), "Tu acceso se renovó automáticamente!");
+                    await saveRecipient(chatId, recipient.username, await exports.passToMd5(recipient.password), "Tu acceso se renovó automáticamente!");
                 }
+            }
             if (isAllowed) {
                 try {
-                    await botLogic.sendMessage(chatId, body, {disable_web_page_preview: true});
+                    let canViewOdums = ["fiegmund", "naarf", "hexen02"];
+                    if ((obj.source === "odums" && canViewOdums.indexOf(recipient.username) !== -1) || obj.source === "papas") {
+                        await botLogic.sendMessage(chatId, body, {disable_web_page_preview: true});
+                    }
                 } catch (e) {
-                    console.error(e);
+                    console.dberror(e);
                 }
             } else {
                 await botLogic.sendMessage(chatId, "Se venció tu acceso a las papas, prueba con:\n- Loguearte nuevamente con /login o /remember\n- Deslogueate con /logout.", {disable_web_page_preview: true});
@@ -122,7 +152,6 @@ async function sendTelegramMessage(cb, obj) {
         cb(obj);
     });
 }
-
 
 async function saveRecipient(chatId, user, pass, msg) {
     await dataService.saveRecipient(async function () {

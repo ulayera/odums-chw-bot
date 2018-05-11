@@ -28,11 +28,23 @@ async function saveRecipient(chatId, user, pass, msg) {
     });
 }
 
-let checkIfAllowed = exports.checkIfAllowed = async function checkIfAllowed(user, pass) {
-    let loginHeaders = await utilService.asyncWrapper(httpService.doLogin, [{
+let getLoginHeaders = exports.getLoginHeaders = async function getLoginHeaders(user, pass) {
+    return await utilService.asyncWrapper(httpService.doLogin, [{
         user: user,
         pass: pass
     }]);
+};
+
+let checkIfAllowed = exports.checkIfAllowed = async function checkIfAllowed(user, pass, headers) {
+    let loginHeaders;
+    if (!headers) {
+        loginHeaders = await utilService.asyncWrapper(httpService.doLogin, [{
+            user: user,
+            pass: pass
+        }]);
+    } else {
+        loginHeaders = headers;
+    }
     if (loginHeaders && loginHeaders["set-cookie"].length > 3) {
         let a = await utilService.asyncWrapper(httpService.getPapas, [loginHeaders]);
         b = utilService.parseaHTMLPapas(a);
@@ -41,11 +53,16 @@ let checkIfAllowed = exports.checkIfAllowed = async function checkIfAllowed(user
         return false;
 };
 
-let checkIfOdumAllowed = exports.checkIfOdumAllowed = async function checkIfOdumAllowed(user, pass) {
-    let loginHeaders = await utilService.asyncWrapper(httpService.doLogin, [{
-        user: user,
-        pass: pass
-    }]);
+let checkIfOdumAllowed = exports.checkIfOdumAllowed = async function checkIfOdumAllowed(user, pass, headers) {
+    let loginHeaders;
+    if (!headers) {
+        loginHeaders = await utilService.asyncWrapper(httpService.doLogin, [{
+            user: user,
+            pass: pass
+        }]);
+    } else {
+        loginHeaders = headers;
+    }
     if (loginHeaders && loginHeaders["set-cookie"].length > 3) {
         let a = await utilService.asyncWrapper(httpService.getOdums, [loginHeaders]);
         b = utilService.parseaHTMLPapas(a);
@@ -86,11 +103,6 @@ bot.onText(/\/logout/, async (msg) => {
     var result = await dataService.deleteRecipient(async function (data) {
         await bot.sendMessage(chatId, "Te deslogueaste OK, si almacenaste tu password esta ya se eliminó completamente de la BD.", {disable_web_page_preview: true});
     }, {"_id": chatId});
-});
-
-bot.onText(/\/test/, async (msg, match) => {
-    const chatId = msg.chat.id;
-    const text = "LINK";
 });
 
 exports.sendMessage = async function () {

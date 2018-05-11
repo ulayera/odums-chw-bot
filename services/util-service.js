@@ -4,19 +4,23 @@ const cheerio = module.parent.exports.cheerio;
 exports.asyncWrapper = async function (func, args) {
     if (!args) args = [];
     return new Promise((resolve, reject) => {
-        args.unshift(function (value) {
-            if (value instanceof Error) {
-                reject(value);
-            } else {
-                resolve(value);
-            }
-        });
-        func.apply(this, args);
+        try {
+            args.unshift(function (value) {
+                if (value instanceof Error) {
+                    reject(value);
+                } else {
+                    resolve(value);
+                }
+            });
+            func.apply(this, args);
+        } catch (e) {
+            reject(e);
+        }
     });
 };
 
 exports.parseaHTMLPapas = function (body, foro) {
-    const $ = cheerio.load(body);
+    let $ = cheerio.load(body);
     var output = [];
     var hilos = $("#threads li");
     for (var i = 0; i < hilos.length; i++) {
@@ -52,7 +56,7 @@ var stripHTML = function (elements, strBuffer) {
                 strBuffer = stripHTML(row.children, strBuffer);
             }
         } catch (e) {
-            console.log(e);
+            console.dblog(e);
         }
     }
     return strBuffer;
